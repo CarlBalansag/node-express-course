@@ -1,12 +1,25 @@
 console.log('Express Tutorial')
 const express = require('express');
 const { products } = require("./data");
+const peopleRouter = require("./routes/people");
 const app = express();
 
 //Middleware
-app.use(express.static('./public'));
 
-//API return JSON
+const logger = (req, res, next) => {
+    const method = req.method
+    const url = req.url
+    const time = new Date().getFullYear()
+    console.log(method, url, time)
+    next()
+}
+
+app.use(logger); 
+app.use(express.static('./public'));
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+
+//ROUTES
 app.get('/api/v1/test', (req, res) => {
     res.json({ message: "It worked!" });
 });
@@ -54,10 +67,14 @@ app.get('/api/v1/products', (req, res) => {
     res.json(products);
 });
 
+app.use("/api/v1/people", peopleRouter);
+
+
 //Handle Errors
 app.all('*', (req, res) => {
     res.status(404).send('Page not found');
 });
+
 
 const PORT = 3000;
 app.listen(PORT, () => {
